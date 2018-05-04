@@ -4,7 +4,7 @@ const querystring = require('querystring')
 const _ = require('lodash')
 // The Firebase Admin SDK to access the Firebase Realtime Database.
 const admin = require('firebase-admin');
-admin.initializeApp(functions.config().firebase);
+const adminDb = admin.initializeApp(functions.config().firebase);
 const cors = require("cors")
 const express = require("express")
 const composeTimelineItems = require('./helperFunctions.js').composeTimelineItems;
@@ -170,18 +170,20 @@ const example = functions.database.ref('/roomPairs/{id}')
             console.log('itemsPath', itemsPath);
 
             if(shift.role === CLINICIAN){
+                console.log('Clinician case');
                 let items = composeTimelineItems(shift);  // not ideal.
+                console.log('Composed items', items);
                 let itemRef;
                 let userId;
                 items.map(item => {
-                  itemRef = admin.database().ref(itemsPath).push()
+                  itemRef = adminDb.ref(itemsPath).push()
                   item['id'] = itemRef.key;
                   console.log('Item with id', item);
                   itemRef.set(item);
                   // after saving the timeline item, we store the path to the item under dependencies
                   // of the newly added clinician item, this way if the shift is deleted, we also delete it from
                   // the shift
-                  admin.database.ref(shiftPath).push(`${itemsPath}/${itemRef.key}`)
+                  adminDb.ref(shiftPath).push(`${itemsPath}/${itemRef.key}`)
                 })
             }
           });

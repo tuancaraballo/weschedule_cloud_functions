@@ -39,93 +39,94 @@ app.get("/cache-posts", (request, response) => {
     })
   });
 
+//  TODO : turned off this cloud function, original cloud function, we may no longer needed
 
-app.post("/ma_task", (request, response) => {
-  let tasks = []
-  let mas = []
-  let payload = {}
-  let tasks_dic = {}
-  let mas_dic = {}
-  admin.database().ref('/tasks').once('value').then(snapshot => {
-    tasks_dic = snapshot.val();
-    // iterating through every task key
-    for(task_key in tasks_dic ){
-      // fetch data from tasks dic
-      let task_data = tasks_dic[task_key];
-      let task_to_add = {}
-      // add the key to the value
-      task_to_add['key'] = task_key;
-      task_to_add['skills_req'] = task_data['skills_req'];
-      task_to_add['effort'] = task_data['effort'];
-      // parse the dates into ints
-      let due_dates = task_data['due_dates'].split(',')
-      let result_dates = []
-      due_dates.map(el=>{
-        el = parseInt(el)
-        result_dates = [...result_dates, el]
-      })
-      task_to_add['due_dates'] = result_dates;
-      // add data to tasks array
-      tasks = [...tasks, task_to_add]
-    }
-  }).then(()=>{
-    admin.database().ref('employees').orderByChild('role').equalTo('medical_assistant').once('value').then(snapshot => {
-      mas_dic = snapshot.val()
-      for(ma_key in mas_dic){
-        let ma_data = mas_dic[ma_key]
-
-        let ma_to_add = {}
-        ma_to_add['key'] = ma_key
-        ma_to_add['skills'] = ma_data['skills'].split(',')
-
-        let availability = ma_data['availability'].split(',')
-        let result_availability = []
-        availability.map(el=>{
-          el = parseInt(el)
-          result_availability = [...result_availability, el]
-        })
-        ma_to_add['availability'] = result_availability
-        mas = [...mas, ma_to_add]
-      }
-      payload['ma_info'] = mas;
-      payload['task_info'] = tasks;
-
-    }).then(()=>{
-        axios.post('https://weschedule-algorithm.herokuapp.com/ma_task', payload)
-        .then(algorithm_response => {
-          let assignments = []
-          let result = algorithm_response['data']
-
-          // Step 1: Iterate through all employees assignments
-          for(employee_id in result){
-            // fetches all the tasks the employee has been paired with
-            let employee_assignments = result[employee_id]
-            // Step 2: fetch every {task_id: '334sk1', due_date: '24'}
-            //   add task name, description, employee_id, employee_key
-            employee_assignments.map(assignment=>{
-              assignment['employee_key'] = employee_id
-              assignment['employee_name'] = mas_dic[employee_id]['name']
-              let task_key = assignment['task_key']
-              assignment['task_name'] = tasks_dic[task_key]['name']
-              assignment['task_description'] = tasks_dic[task_key]['description']
-              assignments = [...assignments, assignment]
-            })
-          }
-          assignments = _.orderBy(assignments, ['due_date'],['asc'])
-          console.log('Assignments', assignments);
-
-          return response.send(assignments);
-        })
-        .catch(function (error) {
-          console.log(error);
-          return response.send(error);
-        })
-      })
-  }).catch(error => {
-      response.send(error)
-    })
-
-  });
+// app.post("/ma_task", (request, response) => {
+//   let tasks = []
+//   let mas = []
+//   let payload = {}
+//   let tasks_dic = {}
+//   let mas_dic = {}
+//   return admin.database().ref('/tasks').once('value').then(snapshot => {
+//     tasks_dic = snapshot.val();
+//     // iterating through every task key
+//     for(task_key in tasks_dic ){
+//       // fetch data from tasks dic
+//       let task_data = tasks_dic[task_key];
+//       let task_to_add = {}
+//       // add the key to the value
+//       task_to_add['key'] = task_key;
+//       task_to_add['skills_req'] = task_data['skills_req'];
+//       task_to_add['effort'] = task_data['effort'];
+//       // parse the dates into ints
+//       let due_dates = task_data['due_dates'].split(',')
+//       let result_dates = []
+//       due_dates.map(el=>{
+//         el = parseInt(el)
+//         result_dates = [...result_dates, el]
+//       })
+//       task_to_add['due_dates'] = result_dates;
+//       // add data to tasks array
+//       tasks = [...tasks, task_to_add]
+//     }
+//   }).then(()=>{
+//     return admin.database().ref('employees').orderByChild('role').equalTo('medical_assistant').once('value').then(snapshot => {
+//       mas_dic = snapshot.val()
+//       for(ma_key in mas_dic){
+//         let ma_data = mas_dic[ma_key]
+//
+//         let ma_to_add = {}
+//         ma_to_add['key'] = ma_key
+//         ma_to_add['skills'] = ma_data['skills'].split(',')
+//
+//         let availability = ma_data['availability'].split(',')
+//         let result_availability = []
+//         availability.map(el=>{
+//           el = parseInt(el)
+//           result_availability = [...result_availability, el]
+//         })
+//         ma_to_add['availability'] = result_availability
+//         mas = [...mas, ma_to_add]
+//       }
+//       payload['ma_info'] = mas;
+//       payload['task_info'] = tasks;
+//
+//     }).then(()=>{
+//         return axios.post('https://weschedule-algorithm.herokuapp.com/ma_task', payload)
+//         .then(algorithm_response => {
+//           let assignments = []
+//           let result = algorithm_response['data']
+//
+//           // Step 1: Iterate through all employees assignments
+//           for(employee_id in result){
+//             // fetches all the tasks the employee has been paired with
+//             let employee_assignments = result[employee_id]
+//             // Step 2: fetch every {task_id: '334sk1', due_date: '24'}
+//             //   add task name, description, employee_id, employee_key
+//             employee_assignments.map(assignment=>{
+//               assignment['employee_key'] = employee_id
+//               assignment['employee_name'] = mas_dic[employee_id]['name']
+//               let task_key = assignment['task_key']
+//               assignment['task_name'] = tasks_dic[task_key]['name']
+//               assignment['task_description'] = tasks_dic[task_key]['description']
+//               assignments = [...assignments, assignment]
+//             })
+//           }
+//           assignments = _.orderBy(assignments, ['due_date'],['asc'])
+//           console.log('Assignments', assignments);
+//
+//           return response.send(assignments);
+//         })
+//         .catch(function (error) {
+//           console.log(error);
+//           return response.send(error);
+//         })
+//       })
+//   }).catch(error => {
+//       response.send(error)
+//     })
+//
+//   });
 
   const api = functions.https.onRequest((request, response) => {
     if (!request.path) {

@@ -13,6 +13,8 @@ const composeTimelineItems = require('./helperFunctions.js').composeTimelineItem
 /* Express instance server */
 const app = express()
 
+const CLINICIAN = 'clinician'
+
 
 
 var whitelist = ['https://www.weschedule.co', 'https://weschedule.herokuapp.com']
@@ -146,41 +148,42 @@ const example = functions.database.ref('/roomPairs/{id}')
     console.log('Keys makeRoom keys', Object.keys(snapshot));
     console.log('Make roominValue data', snapshot._data);
 
+
       // Only edit data when it is first created.
       //
-        // if (change.before.exists()) {
-        //   return null;
-        // }
-          // .onWrite((snapshot, context) => {
-            // Grab the current value of what was written to the Realtime Database.
+      //   if (change.before.exists()) {
+      //     return null;
+      //   }
+      //     .onWrite((snapshot, context) => {
+      //       Grab the current value of what was written to the Realtime Database.
 
-            // let shift = snapshot.val();
-            // console.log('Shift', shift);
-            // console.log('Context', context)
-            // console.log('Value', change.after.val());
-            // console.log('Context dayOfYear', context.params.dayOfYear);
-            // console.log('Context', context.params.pushId);
+            let shift = snapshot._data;
+            let {year} = context.params;
+            let {week} = context.params;
+            let {dayOfYear} = context.params;
+            let {shiftId} = context.params;
+
             // let year =
-            // let shiftPath = `/availability/${dayOfYear}/${week}/${dayOfYear}/${shift.shiftId}/dependencies`
-            // let itemsPath  =`/rooming/${dayOfYear}/${week}/${dayOfYear}`
-            // console.log('Shift Path', shiftPath);
-            // console.log('itemsPath', itemsPath);
-            //
-            // if(shift.role === CLINICIAN){
-            //     let items = composeTimelineItems(shift);  // not ideal.
-            //     let itemRef;
-            //     let userId;
-            //     items.map(item => {
-            //       itemRef = admin.database().ref(itemsPath).push()
-            //       item['id'] = itemRef.key;
-            //       console.log('Item with id', item);
-            //       itemRef.set(item);
-            //       // after saving the timeline item, we store the path to the item under dependencies
-            //       // of the newly added clinician item, this way if the shift is deleted, we also delete it from
-            //       // the shift
-            //       let userRef = admin.database.ref(shiftPath).push(`${itemsPath}/${itemRef.key}`)
-            //     })
-            // }
+            let shiftPath = `/availability/${dayOfYear}/${week}/${dayOfYear}/${shift.shiftId}/dependencies`
+            let itemsPath  =`/rooming/${dayOfYear}/${week}/${dayOfYear}`
+            console.log('Shift Path', shiftPath);
+            console.log('itemsPath', itemsPath);
+
+            if(shift.role === CLINICIAN){
+                let items = composeTimelineItems(shift);  // not ideal.
+                let itemRef;
+                let userId;
+                items.map(item => {
+                  itemRef = admin.database().ref(itemsPath).push()
+                  item['id'] = itemRef.key;
+                  console.log('Item with id', item);
+                  itemRef.set(item);
+                  // after saving the timeline item, we store the path to the item under dependencies
+                  // of the newly added clinician item, this way if the shift is deleted, we also delete it from
+                  // the shift
+                  admin.database.ref(shiftPath).push(`${itemsPath}/${itemRef.key}`)
+                })
+            }
           });
 module.exports = {
     api,

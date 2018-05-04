@@ -164,8 +164,8 @@ const example = functions.database.ref('/roomPairs/{id}')
             let {shiftId} = context.params;
 
             // let year =
-            let shiftPath = `/availability/${dayOfYear}/${week}/${dayOfYear}/${shift.shiftId}/dependencies`
-            let itemsPath  =`/rooming/${dayOfYear}/${week}/${dayOfYear}`
+            let shiftPath = `/availability/${year}/${week}/${dayOfYear}/${shift.shiftId}/dependencies`
+            let itemsPath  =`/rooming/${year}/${week}/${dayOfYear}`
             console.log('Shift Path', shiftPath);
             console.log('itemsPath', itemsPath);
 
@@ -183,7 +183,9 @@ const example = functions.database.ref('/roomPairs/{id}')
                   // after saving the timeline item, we store the path to the item under dependencies
                   // of the newly added clinician item, this way if the shift is deleted, we also delete it from
                   // the shift
-                  adminDb.database().ref(shiftPath).push(`${itemsPath}/${itemRef.key}`)
+                  return adminDb.database().ref(shiftPath).push(`${itemsPath}/${itemRef.key}`).then(()=>{
+                    console.log('Saving items to dependencie scomplete !!')
+                  })
                 })
             }
           });

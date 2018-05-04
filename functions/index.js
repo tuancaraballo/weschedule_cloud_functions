@@ -33,13 +33,13 @@ app.use(cors({origin:true}))
 // ->  Example of how to use caching, use the firebase built-in.
 app.get("/cache-posts", (request, response) => {
   return admin.database().ref(`/tasks`).once('value')
-    .then(snapshot => {
-      console.log('Posts values', snapshot.val());
-      console.log('Post values types', typeof(snapshot.val()))
-      response.set('Cache-Control', 'public, max-age=300, s-maxage=600');
-      return response.send(snapshot.val())
-    })
-  });
+  .then(snapshot => {
+    console.log('Posts values', snapshot.val());
+    console.log('Post values types', typeof(snapshot.val()))
+    response.set('Cache-Control', 'public, max-age=300, s-maxage=600');
+    return response.send(snapshot.val())
+  })
+});
 
 //  TODO : turned off this cloud function, original cloud function, we may no longer needed
 
@@ -130,92 +130,61 @@ app.get("/cache-posts", (request, response) => {
 //
 //   });
 
-  const api = functions.https.onRequest((request, response) => {
-    if (!request.path) {
-      request.url = `/${request.url}` // prepend '/' to keep query params if any
-    }
-    console.log("url is: ", request.url);
-    return app(request, response)
-  })
-const example = functions.database.ref('/roomPairs/{id}')
-  .onCreate((snapshot, context) => {
-    console.log('Here in the example! id', context.params.id );
-    console.log('Value', snapshot.val());
-  });
-
-  const makeRooming = functions.database.ref('/availability/{year}/{week}/{dayOfYear}/{shiftId}').onCreate((snapshot, context) => {
-    // console.log('in Make Rooming', context.params.year );
-    // console.log('Keys makeRoom keys', Object.keys(snapshot));
-    // console.log('Make roominValue data', snapshot._data);
-
-
-      // Only edit data when it is first created.
-      //
-      //   if (change.before.exists()) {
-      //     return null;
-      //   }
-      //     .onWrite((snapshot, context) => {
-      //       Grab the current value of what was written to the Realtime Database.
-
-            let shift = snapshot._data;
-            let {year} = context.params;
-            let {week} = context.params;
-            let {dayOfYear} = context.params;
-            let {shiftId} = context.params;
-
-            // let year =
-            let shiftPath = `/availability/${year}/${week}/${dayOfYear}/${shift.shiftId}/dependencies`
-            let itemsPath  =`/rooming/${year}/${week}/${dayOfYear}`
-            // console.log('Shift Path', shiftPath);
-            // console.log('itemsPath', itemsPath);
-
-
-
-            if(shift.role === CLINICIAN){
-                console.log('Clinician case');
-                let items = composeTimelineItems(shift);  // not ideal.
-                // console.log('Composed items', items);
-                let itemRef;
-
-                let dependencies = items.map(item => {
-                  itemRef = adminDb.database().ref(itemsPath).push()
-                  item['id'] = itemRef.key;
-                  // console.log('Item with id', item);
-                  itemRef.set(item);
-                  // after saving the timeline item, we store the path to the item under dependencies
-                  // of the newly added clinician item, this way if the shift is deleted, we also delete it from
-                  // the shift
-                  return `${itemsPath}/${itemRef.key}`
-                  // dependencies = [... dependencies, `${itemsPath}/${itemRef.key}`]
-
-                })
-
-                shift['dependencies'] = dependencies;
-
-                  // const uppercase = original.toUpperCase();
-                  console.log('Snapshot path', snapshot._path);
-                return snapshot.ref.parent.child(shiftId).set(shift);
-                // snapshot.ref.parent.child('uppercase').set(uppercase);
-                // return adminDb.database().ref(shiftPath).once('value').then(snapshot => {
-                //   console.log('getting the shift path !!!!');
-                //   let val = snapshot.val();
-                //   console.log('snapshot', snapshot);
-                //   console.log('snapshot value', snapshot);
-                //   if(val === undefined){
-                //     val = []
-                //   }
-                //   val = [...val, ...dependencies]
-                //
-                //   return adminDb.database().ref(shiftPath).update(new_dependencies)
-                // });
-            }
-            // return snapshot.ref.parent.child('uppercase').set(uppercase);
-          });
-module.exports = {
-    api,
-    example,
-    makeRooming
+const api = functions.https.onRequest((request, response) => {
+  if (!request.path) {
+    request.url = `/${request.url}` // prepend '/' to keep query params if any
   }
+  console.log("url is: ", request.url);
+  return app(request, response)
+})
+const example = functions.database.ref('/roomPairs/{id}')
+.onCreate((snapshot, context) => {
+  console.log('Here in the example! id', context.params.id );
+  console.log('Value', snapshot.val());
+});
 
-  // TODO: remove this, or considering adding this cloud funciton
-  // exports.makeRooming = functions.database.ref(`/availability/{dayOfYear}/{week}/{dayOfYear}`)
+
+
+/*
+  Purpose: To add dependencies to the shift being created so that when the shift is changed, such as added or deleted we may also want to impact its dependencies.
+
+  dependencies currently implemented:
+    - timeline items:
+          when shift is created, so are the shifts in the timeline
+          when shift is deleted, so are the shifts in the timeline
+    - 
+*/
+const makeRooming = functions.database.ref('/availability/{year}/{week}/{dayOfYear}/{shiftId}').onCreate((snapshot, context) => {
+  let shift = snapshot._data;
+  let {year} = context.params;
+  let {week} = context.params;
+  let {dayOfYear} = context.params;
+  let {shiftId} = context.params;
+
+  let itemsPath  =`/rooming/${year}/${week}/${dayOfYear}`
+
+  if(shift.role === CLINICIAN){
+    let items = composeTimelineItems(shift);  // not ideal.
+    let itemRef;
+
+    let dependencies = items.map(item => {
+      itemRef = adminDb.database().ref(itemsPath).push()
+      item['id'] = itemRef.key;
+      itemRef.set(item);
+      // after saving the timeline item, we store the path to the item under dependencies
+      // of the newly added clinician item, this way if the shift is deleted, we also delete it from
+      // the shift
+      return `${itemsPath}/${itemRef.key}`
+    })
+    shift['dependencies'] = dependencies;
+    return snapshot.ref.parent.child(shiftId).set(shift);
+  }
+});
+module.exports = {
+  api,
+  example,
+  makeRooming
+}
+
+// TODO: remove this, or considering adding this cloud funciton
+// exports.makeRooming = functions.database.ref(`/availability/{dayOfYear}/{week}/{dayOfYear}`)

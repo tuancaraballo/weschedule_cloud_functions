@@ -175,8 +175,8 @@ const example = functions.database.ref('/roomPairs/{id}')
                 let items = composeTimelineItems(shift);  // not ideal.
                 console.log('Composed items', items);
                 let itemRef;
-                let dependencies = [];
-                items.map(item => {
+            
+                let dependencies = items.map(item => {
                   itemRef = adminDb.database().ref(itemsPath).push()
                   item['id'] = itemRef.key;
                   console.log('Item with id', item);
@@ -184,7 +184,8 @@ const example = functions.database.ref('/roomPairs/{id}')
                   // after saving the timeline item, we store the path to the item under dependencies
                   // of the newly added clinician item, this way if the shift is deleted, we also delete it from
                   // the shift
-                  dependencies = [... dependencies, `${itemsPath}/${itemRef.key}`]
+                  return `${itemsPath}/${itemRef.key}`
+                  // dependencies = [... dependencies, `${itemsPath}/${itemRef.key}`]
 
                 })
                 adminDb.database().ref(shiftPath).once('value').then(snapshot => {

@@ -186,25 +186,13 @@ const onCreateClinicianShift = functions.database.ref('/availability/{year}/{wee
   Purpose: To delete de dependencies of a clinician shift upon its deletion
 */
 const onDeleteClinicianShift = functions.database.ref('/availability/{year}/{week}/{dayOfYear}/{shiftId}').onDelete((snapshot, context) => {
-  console.log('--------- !!! On delete has been called')
-  console.log('--------- !!! On delete has been called, snapshot ----', snapshot)
-
-
   let {dependencies} = snapshot._data;
-
-  console.log('----- Dependencies---- ', dependencies);
-
-
   _.forOwn(dependencies, (dependentNode, key) => {
-    console.log(' --- Dependent node to be removed', dependentNode);
     adminDb.database().ref(dependentNode).remove();
   })
-  // dependencies.map(dependentNode => {
-  //
-  // })
-  console.log(' ---> Seems to have worked successfully');
   return snapshot;
 })
+
 module.exports = {
   api,
   onCreateClinicianShift,

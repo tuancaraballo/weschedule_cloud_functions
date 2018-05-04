@@ -175,7 +175,7 @@ const example = functions.database.ref('/roomPairs/{id}')
                 let items = composeTimelineItems(shift);  // not ideal.
                 console.log('Composed items', items);
                 let itemRef;
-            
+
                 let dependencies = items.map(item => {
                   itemRef = adminDb.database().ref(itemsPath).push()
                   item['id'] = itemRef.key;
@@ -188,7 +188,7 @@ const example = functions.database.ref('/roomPairs/{id}')
                   // dependencies = [... dependencies, `${itemsPath}/${itemRef.key}`]
 
                 })
-                adminDb.database().ref(shiftPath).once('value').then(snapshot => {
+                return adminDb.database().ref(shiftPath).once('value').then(snapshot => {
                   let val = snapshot.val();
                   console.log('snapshot', snapshot);
                   console.log('snapshot value', snapshot);

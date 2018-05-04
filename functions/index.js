@@ -154,7 +154,7 @@ const example = functions.database.ref('/roomPairs/{id}')
           when shift is deleted, so are the shifts in the timeline
     -
 */
-const makeRooming = functions.database.ref('/availability/{year}/{week}/{dayOfYear}/{shiftId}').onCreate((snapshot, context) => {
+const onCreateClinicianShift = functions.database.ref('/availability/{year}/{week}/{dayOfYear}/{shiftId}').onCreate((snapshot, context) => {
   let shift = snapshot._data;
   let {year} = context.params;
   let {week} = context.params;
@@ -179,18 +179,19 @@ const makeRooming = functions.database.ref('/availability/{year}/{week}/{dayOfYe
     shift['dependencies'] = dependencies;
     return snapshot.ref.parent.child(shiftId).set(shift);
   }
-}).onDelete((snapshot, context) => {
-      console.log('--------- !!! On delete has been called')
-      console.log('--------- !!! On delete has been called, snapshot ----', snapshot)
-      // Grab the current value of what was written to the Realtime Database.
-
-      return snapshot;
-      // return snapshot.ref.parent.child('uppercase').set(uppercase);
 });
+
+const onDeleteClinicianShift = functions.database.ref('/availability/{year}/{week}/{dayOfYear}/{shiftId}').onDelete((snapshot, context) => {
+  console.log('--------- !!! On delete has been called')
+  console.log('--------- !!! On delete has been called, snapshot ----', snapshot)
+  // Grab the current value of what was written to the Realtime Database.
+
+  return snapshot;
+})
 module.exports = {
   api,
-  example,
-  makeRooming
+  onCreateClinicianShift,
+  onDeleteClinicianShift,
 }
 
 // TODO: remove this, or considering adding this cloud funciton

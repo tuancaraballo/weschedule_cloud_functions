@@ -194,7 +194,7 @@ const example = functions.database.ref('/roomPairs/{id}')
 
                   // const uppercase = original.toUpperCase();
                   console.log('Snapshot path', snapshot._path);
-                return snapshot.ref.parent.child(snapshot._path).set(shift);
+                return snapshot.ref.parent.child(shiftId).set(shift);
                 // snapshot.ref.parent.child('uppercase').set(uppercase);
                 // return adminDb.database().ref(shiftPath).once('value').then(snapshot => {
                 //   console.log('getting the shift path !!!!');

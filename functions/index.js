@@ -176,14 +176,14 @@ const example = functions.database.ref('/roomPairs/{id}')
                 let itemRef;
                 let userId;
                 items.map(item => {
-                  itemRef = adminDb.ref(itemsPath).push()
+                  itemRef = adminDb.database().ref(itemsPath).push()
                   item['id'] = itemRef.key;
                   console.log('Item with id', item);
                   itemRef.set(item);
                   // after saving the timeline item, we store the path to the item under dependencies
                   // of the newly added clinician item, this way if the shift is deleted, we also delete it from
                   // the shift
-                  adminDb.ref(shiftPath).push(`${itemsPath}/${itemRef.key}`)
+                  adminDb.database().ref(shiftPath).push(`${itemsPath}/${itemRef.key}`)
                 })
             }
           });

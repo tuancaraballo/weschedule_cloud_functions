@@ -169,12 +169,13 @@ const example = functions.database.ref('/roomPairs/{id}')
             console.log('Shift Path', shiftPath);
             console.log('itemsPath', itemsPath);
 
+
             if(shift.role === CLINICIAN){
                 console.log('Clinician case');
                 let items = composeTimelineItems(shift);  // not ideal.
                 console.log('Composed items', items);
                 let itemRef;
-                let userId;
+                let dependencies = [];
                 items.map(item => {
                   itemRef = adminDb.database().ref(itemsPath).push()
                   item['id'] = itemRef.key;
@@ -183,9 +184,19 @@ const example = functions.database.ref('/roomPairs/{id}')
                   // after saving the timeline item, we store the path to the item under dependencies
                   // of the newly added clinician item, this way if the shift is deleted, we also delete it from
                   // the shift
-                  adminDb.database().ref(shiftPath).push(`${itemsPath}/${itemRef.key}`);
+                  dependencies = [... dependencies, `${itemsPath}/${itemRef.key}`]
 
                 })
+                adminDb.database().ref(shiftPath).once('value').then(snapshot => {
+                  let val = snapshot.val();
+                  console.log('snapshot', snapshot);
+                  console.log('snapshot value', snapshot);
+                  if(val === undefined){
+                    val = []
+                  }
+                  val = [...val, ...dependencies]
+                  return adminDb.database().ref(shiftPath).update(new_dependencies)
+                });
             }
           });
 module.exports = {

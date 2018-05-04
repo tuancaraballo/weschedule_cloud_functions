@@ -183,9 +183,8 @@ const example = functions.database.ref('/roomPairs/{id}')
                   // after saving the timeline item, we store the path to the item under dependencies
                   // of the newly added clinician item, this way if the shift is deleted, we also delete it from
                   // the shift
-                  return adminDb.database().ref(shiftPath).push(`${itemsPath}/${itemRef.key}`).then(()=>{
-                    console.log('Saving items to dependencie scomplete !!')
-                  })
+                  adminDb.database().ref(shiftPath).push(`${itemsPath}/${itemRef.key}`);
+
                 })
             }
           });

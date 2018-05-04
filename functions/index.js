@@ -152,7 +152,7 @@ const example = functions.database.ref('/roomPairs/{id}')
     - timeline items:
           when shift is created, so are the shifts in the timeline
           when shift is deleted, so are the shifts in the timeline
-    - 
+    -
 */
 const makeRooming = functions.database.ref('/availability/{year}/{week}/{dayOfYear}/{shiftId}').onCreate((snapshot, context) => {
   let shift = snapshot._data;
@@ -179,6 +179,13 @@ const makeRooming = functions.database.ref('/availability/{year}/{week}/{dayOfYe
     shift['dependencies'] = dependencies;
     return snapshot.ref.parent.child(shiftId).set(shift);
   }
+}).onDelete((snapshot, context) => {
+      console.log('--------- !!! On delete has been called')
+      console.log('--------- !!! On delete has been called, snapshot ----', snapshot)
+      // Grab the current value of what was written to the Realtime Database.
+
+      return snapshot;
+      // return snapshot.ref.parent.child('uppercase').set(uppercase);
 });
 module.exports = {
   api,

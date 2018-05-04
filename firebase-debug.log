@@ -1,0 +1,18 @@
+[debug] [2018-05-04T06:03:04.905Z] ----------------------------------------------------------------------
+[debug] [2018-05-04T06:03:04.909Z] Command:       /Users/tuancaraballo/.nvm/versions/node/v7.0.0/bin/node /Users/tuancaraballo/.nvm/versions/node/v7.0.0/bin/firebase deploy
+[debug] [2018-05-04T06:03:04.909Z] CLI Version:   3.18.4
+[debug] [2018-05-04T06:03:04.909Z] Platform:      darwin
+[debug] [2018-05-04T06:03:04.909Z] Node Version:  v7.0.0
+[debug] [2018-05-04T06:03:04.911Z] Time:          Thu May 03 2018 23:03:04 GMT-0700 (PDT)
+[debug] [2018-05-04T06:03:04.911Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2018-05-04T06:03:04.933Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2018-05-04T06:03:04.933Z] > authorizing via signed-in user
+[debug] [2018-05-04T06:03:04.937Z] >>> HTTP REQUEST GET https://admin.firebase.com/v1/projects/weschedule-dev  
+  
+ Thu May 03 2018 23:03:04 GMT-0700 (PDT)
+[debug] [2018-05-04T06:03:05.352Z] <<< HTTP RESPONSE 200
+[debug] [2018-05-04T06:03:05.354Z] >>> HTTP REQUEST GET https://admin.firebase.com/v1/database/weschedule-dev/tokens  
+  
+ Thu May 03 2018 23:03:05 GMT-0700 (PDT)
+[debug] [2018-05-04T06:03:05.841Z] <<< HTTP RESPONSE 200

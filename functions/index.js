@@ -19,10 +19,9 @@ var whitelist = ['https://www.weschedule.co', 'https://weschedule.herokuapp.com'
 var corsOptions = {
   origin: function (origin, callback) {
     if (whitelist.indexOf(origin) !== -1) {
-      callback(null, true)
-    } else {
-      callback(new Error('Not allowed by CORS'))
+      return callback(null, true)
     }
+    return callback(new Error('Not allowed by CORS'))
   }
 }
 /* Middlewares */
@@ -31,7 +30,7 @@ app.use(cors({origin:true}))
 
 // ->  Example of how to use caching, use the firebase built-in.
 app.get("/cache-posts", (request, response) => {
-  admin.database().ref(`/tasks`).once('value')
+  return admin.database().ref(`/tasks`).once('value')
     .then(snapshot => {
       console.log('Posts values', snapshot.val());
       console.log('Post values types', typeof(snapshot.val()))

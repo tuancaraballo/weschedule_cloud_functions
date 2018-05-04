@@ -148,6 +148,10 @@ const example = functions.database.ref('/roomPairs/{id}')
 /*
   Purpose: To add dependencies to the shift being created so that when the shift is changed, such as added or deleted we may also want to impact its dependencies.
 
+  Details:   after saving the timeline item, we store the path to the item under dependencies of the newly added
+            clinician item, this way if the shift is deleted, we also delete it from
+            the shift
+
   dependencies currently implemented:
     - timeline items:
           when shift is created, so are the shifts in the timeline
@@ -164,16 +168,12 @@ const onCreateClinicianShift = functions.database.ref('/availability/{year}/{wee
   let itemsPath  =`/rooming/${year}/${week}/${dayOfYear}`
 
   if(shift.role === CLINICIAN){
-    let items = composeTimelineItems(shift);  // not ideal.
+    let items = composeTimelineItems(shift);
     let itemRef;
-
     let dependencies = items.map(item => {
       itemRef = adminDb.database().ref(itemsPath).push()
       item['id'] = itemRef.key;
       itemRef.set(item);
-      // after saving the timeline item, we store the path to the item under dependencies
-      // of the newly added clinician item, this way if the shift is deleted, we also delete it from
-      // the shift
       return `${itemsPath}/${itemRef.key}`
     })
     shift['dependencies'] = dependencies;
@@ -181,11 +181,21 @@ const onCreateClinicianShift = functions.database.ref('/availability/{year}/{wee
   }
 });
 
+
+/*
+  Purpose: To delete de dependencies of a clinician shift upon its deletion
+*/
 const onDeleteClinicianShift = functions.database.ref('/availability/{year}/{week}/{dayOfYear}/{shiftId}').onDelete((snapshot, context) => {
   console.log('--------- !!! On delete has been called')
   console.log('--------- !!! On delete has been called, snapshot ----', snapshot)
-  // Grab the current value of what was written to the Realtime Database.
 
+
+  let {dependencies} = snapshot._data;
+  dependencies.map(dependentNode => {
+    console.log(' --- Dependent node to be removed', dependentNode);
+    adminDb.database().ref(dependentNode).remove();
+  })
+  console.log(' ---> Seems to have worked successfully');
   return snapshot;
 })
 module.exports = {

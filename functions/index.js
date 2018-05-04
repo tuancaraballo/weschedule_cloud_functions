@@ -191,10 +191,17 @@ const onDeleteClinicianShift = functions.database.ref('/availability/{year}/{wee
 
 
   let {dependencies} = snapshot._data;
-  dependencies.map(dependentNode => {
+
+  console.log('----- Dependencies---- ', dependencies);
+
+
+  _.forOwn(dependencies, (dependentNode, key) => {
     console.log(' --- Dependent node to be removed', dependentNode);
     adminDb.database().ref(dependentNode).remove();
   })
+  // dependencies.map(dependentNode => {
+  //
+  // })
   console.log(' ---> Seems to have worked successfully');
   return snapshot;
 })
